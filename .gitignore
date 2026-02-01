@@ -1,3 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Data and results (large files)
+data/
+results/
+
+# Jupyter
 .ipynb_checkpoints/
-analysis.ipynb
-figure.png
+*.ipynb
+
+# Other
+*.png
+*.log
+wandb/

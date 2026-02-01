@@ -17,7 +17,7 @@ function run_repeats {
     fi
 
     main="python -m fraudGT.main --cfg ${cfg_file}"
-    out_dir="/nobackup/users/junhong/Logs/results/${dataset}"  # <-- Set the output dir.
+    out_dir="./results/${dataset}"  # <-- Set the output dir.
     common_params="out_dir ${out_dir} ${cfg_overrides}"
 
     echo "Run program: ${main}"
