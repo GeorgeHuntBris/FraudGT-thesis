@@ -1,5 +1,7 @@
 import copy
+import json
 import logging
+import os
 import time
 from tqdm import tqdm
 
@@ -262,7 +264,7 @@ def custom_train(loggers, loaders, model, optimizer, scheduler):
         else:
             wandb_name = cfg.wandb.name
         run = wandb.init(entity=cfg.wandb.entity, project=cfg.wandb.project,
-                         name=wandb_name, dir='/nobackup/users/junhong/Logs/')
+                         name=wandb_name, dir=cfg.out_dir)
         run.config.update(cfg_to_dict(cfg))
 
     num_splits = len(loggers)
@@ -271,10 +273,10 @@ def custom_train(loggers, loaders, model, optimizer, scheduler):
     perf = [[] for _ in range(num_splits)]
     for cur_epoch in range(start_epoch, cfg.optim.max_epoch):
         start_time = time.perf_counter()
-        # enable_runtime_stats()
+        enable_runtime_stats()
         train_epoch(cur_epoch, loggers[0], loaders[0], model, optimizer, scheduler,
                     cfg.optim.batch_accumulation)
-        # disable_runtime_stats()
+        disable_runtime_stats()
         perf[0].append(loggers[0].write_epoch(cur_epoch))
 
         if is_eval_epoch(cur_epoch, start_epoch):
@@ -355,6 +357,23 @@ def custom_train(loggers, loaders, model, optimizer, scheduler):
                                      f"gamma={gtl.attention.gamma.item()}")
     logging.info(f"Avg time per epoch: {np.mean(full_epoch_times):.2f}s")
     logging.info(f"Total train loop time: {np.sum(full_epoch_times) / 3600:.2f}h")
+
+    # Save timing stats to JSON for throughput/latency analysis
+    timing_stats = {
+        'full_epoch_times': full_epoch_times,
+        'avg_epoch_time_s': float(np.mean(full_epoch_times)),
+        'total_train_time_s': float(np.sum(full_epoch_times)),
+        'num_epochs': len(full_epoch_times),
+    }
+    for region, times_ms in runtime_stats_cuda.cuda_times.items():
+        timing_stats[f'{region}_mean_ms'] = float(np.mean(times_ms)) if times_ms else 0.0
+        timing_stats[f'{region}_std_ms'] = float(np.std(times_ms)) if len(times_ms) > 1 else 0.0
+        timing_stats[f'{region}_all_ms'] = [float(t) for t in times_ms]
+    timing_path = os.path.join(cfg.run_dir, 'timing_stats.json')
+    with open(timing_path, 'w') as f:
+        json.dump(timing_stats, f, indent=2)
+    logging.info(f"Timing stats saved to {timing_path}")
+
     for logger in loggers:
         logger.close()
     if cfg.train.ckpt_clean:
