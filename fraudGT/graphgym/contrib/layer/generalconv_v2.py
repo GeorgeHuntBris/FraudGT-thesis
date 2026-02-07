@@ -4,7 +4,7 @@ from torch.nn import Parameter
 from torch_geometric.nn.conv import MessagePassing
 from torch_geometric.nn.inits import glorot, zeros
 from torch_geometric.utils import add_remaining_self_loops, is_undirected
-from torch_scatter import scatter_add
+from torch_geometric.utils import scatter
 
 from fraudGT.graphgym.config import cfg
 
@@ -66,15 +66,15 @@ class GeneralConvLayerV2(MessagePassing):
 
         row, col = edge_index
         if is_undirected(edge_index, num_nodes=num_nodes):
-            deg = scatter_add(edge_weight, row, dim=0, dim_size=num_nodes)
+            deg = scatter(edge_weight, row, dim=0, dim_size=num_nodes, reduce='add')
             deg_inv_sqrt = deg.pow(-0.5)
             deg_inv_sqrt[deg_inv_sqrt == float('inf')] = 0
             norm = deg_inv_sqrt[row] * edge_weight * deg_inv_sqrt[col]
         else:
             if cfg.gnn.flow == 'source_to_target':
-                deg = scatter_add(edge_weight, row, dim=0, dim_size=num_nodes)
+                deg = scatter(edge_weight, row, dim=0, dim_size=num_nodes, reduce='add')
             else:
-                deg = scatter_add(edge_weight, col, dim=0, dim_size=num_nodes)
+                deg = scatter(edge_weight, col, dim=0, dim_size=num_nodes, reduce='add')
             deg_inv_sqrt = deg.pow(-1.0)
             deg_inv_sqrt[deg_inv_sqrt == float('inf')] = 0
             norm = (deg_inv_sqrt[row] if cfg.gnn.flow == 'source_to_target'
@@ -206,15 +206,15 @@ class GeneralEdgeConvLayerV2(MessagePassing):
 
         row, col = edge_index
         if is_undirected(edge_index, num_nodes=num_nodes):
-            deg = scatter_add(edge_weight, row, dim=0, dim_size=num_nodes)
+            deg = scatter(edge_weight, row, dim=0, dim_size=num_nodes, reduce='add')
             deg_inv_sqrt = deg.pow(-0.5)
             deg_inv_sqrt[deg_inv_sqrt == float('inf')] = 0
             norm = deg_inv_sqrt[row] * edge_weight * deg_inv_sqrt[col]
         else:
             if cfg.gnn.flow == 'source_to_target':
-                deg = scatter_add(edge_weight, row, dim=0, dim_size=num_nodes)
+                deg = scatter(edge_weight, row, dim=0, dim_size=num_nodes, reduce='add')
             else:
-                deg = scatter_add(edge_weight, col, dim=0, dim_size=num_nodes)
+                deg = scatter(edge_weight, col, dim=0, dim_size=num_nodes, reduce='add')
             deg_inv_sqrt = deg.pow(-1.0)
             deg_inv_sqrt[deg_inv_sqrt == float('inf')] = 0
             norm = (deg_inv_sqrt[row] if cfg.gnn.flow == 'source_to_target'

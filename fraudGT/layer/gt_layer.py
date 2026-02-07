@@ -1,8 +1,11 @@
 import math, time
 import torch
-import torch_sparse
+try:
+    import torch_sparse
+except ImportError:
+    torch_sparse = None  # Only needed for kHop attention masks
 import numpy as np
-from torch_scatter import scatter_max
+from torch_geometric.utils import scatter
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import Parameter
@@ -369,9 +372,14 @@ class GTLayer(nn.Module):
                         edge_scores = edge_scores + attn_mask[dst_nodes, src_nodes]
 
                     expanded_dst_nodes = dst_nodes.repeat(H, 1)  # Repeat dst_nodes for each head
-                    
-                    # Step 2: Calculate max for each destination node per head using scatter_max
-                    max_scores, _ = scatter_max(edge_scores, expanded_dst_nodes, dim=1, dim_size=L)
+
+                    # Step 2: Calculate max for each destination node per head
+                    # Use loop over heads since PyG scatter requires 1D index
+                    max_scores_list = []
+                    for h in range(H):
+                        h_max = scatter(edge_scores[h], dst_nodes, dim=0, dim_size=L, reduce='max')
+                        max_scores_list.append(h_max)
+                    max_scores = torch.stack(max_scores_list, dim=0)  # H x L
                     max_scores = max_scores.gather(1, expanded_dst_nodes)
 
                     # Step 3: Exponentiate scores and sum

@@ -1,5 +1,5 @@
 import torch
-from torch_scatter import scatter
+from torch_geometric.utils import scatter
 
 import fraudGT.graphgym.register as register
 from fraudGT.graphgym.config import cfg

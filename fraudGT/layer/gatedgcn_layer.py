@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch_geometric.nn as pyg_nn
 import fraudGT.graphgym.register as register
 from fraudGT.graphgym.register import register_layer
-from torch_scatter import scatter
+from torch_geometric.utils import scatter
 
 
 class GatedGCNLayer(pyg_nn.conv.MessagePassing):

@@ -6,7 +6,7 @@ from torch_geometric.nn.conv import MessagePassing
 from torch_geometric.nn.inits import glorot, reset, zeros
 from torch_geometric.utils import (add_remaining_self_loops, add_self_loops,
                                    remove_self_loops, softmax)
-from torch_scatter import scatter_add
+from torch_geometric.utils import scatter
 
 from fraudGT.graphgym.config import cfg
 from fraudGT.graphgym.register import register_layer
@@ -61,7 +61,7 @@ class GeneralIDConvLayer(MessagePassing):
             edge_index, edge_weight, fill_value, num_nodes)
 
         row, col = edge_index
-        deg = scatter_add(edge_weight, row, dim=0, dim_size=num_nodes)
+        deg = scatter(edge_weight, row, dim=0, dim_size=num_nodes, reduce='add')
         deg_inv_sqrt = deg.pow(-0.5)
         deg_inv_sqrt[deg_inv_sqrt == float('inf')] = 0
 
@@ -159,7 +159,7 @@ class GCNIDConvLayer(MessagePassing):
             edge_index, edge_weight, fill_value, num_nodes)
 
         row, col = edge_index
-        deg = scatter_add(edge_weight, row, dim=0, dim_size=num_nodes)
+        deg = scatter(edge_weight, row, dim=0, dim_size=num_nodes, reduce='add')
         deg_inv_sqrt = deg.pow(-0.5)
         deg_inv_sqrt[deg_inv_sqrt == float('inf')] = 0
 

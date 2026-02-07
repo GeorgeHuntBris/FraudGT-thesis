@@ -1,6 +1,6 @@
 import torch
 from torch_geometric.utils import add_remaining_self_loops
-from torch_scatter import scatter_add
+from torch_geometric.utils import scatter
 
 
 def norm(edge_index, num_nodes, edge_weight=None, improved=False, dtype=None):
@@ -14,7 +14,7 @@ def norm(edge_index, num_nodes, edge_weight=None, improved=False, dtype=None):
                                                        fill_value, num_nodes)
 
     row, col = edge_index
-    deg = scatter_add(edge_weight, row, dim=0, dim_size=num_nodes)
+    deg = scatter(edge_weight, row, dim=0, dim_size=num_nodes, reduce='add')
     deg_inv_sqrt = deg.pow(-0.5)
     deg_inv_sqrt[deg_inv_sqrt == float('inf')] = 0
 

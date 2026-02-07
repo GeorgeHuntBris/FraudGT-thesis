@@ -3,9 +3,12 @@ import sys, os
 import os.path as osp
 import pandas as pd
 import numpy as np
-import datatable as dt
 from datetime import datetime
-from datatable import f,join,sort
+try:
+    import datatable as dt
+    from datatable import f, join, sort
+except ImportError:
+    dt = None
 from collections import defaultdict
 from typing import Callable, List, Optional
 

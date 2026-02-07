@@ -1,4 +1,4 @@
-from torch_scatter import scatter
+from torch_geometric.utils import scatter
 
 from fraudGT.graphgym.register import register_pooling
 

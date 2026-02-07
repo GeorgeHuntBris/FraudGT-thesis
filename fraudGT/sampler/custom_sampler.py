@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from torch import Tensor
 from torch.utils.data import DataLoader, TensorDataset
-from torch_sparse import SparseTensor
+from torch_geometric.typing import SparseTensor
 
 from torch_geometric.data import (Data, HeteroData)
 from torch_geometric.transforms import BaseTransform

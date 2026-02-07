@@ -3,7 +3,7 @@ import os.path as osp
 import gdown
 import torch
 import numpy as np
-from torch_sparse import SparseTensor
+from torch_geometric.typing import SparseTensor
 
 def download_dataset(url, output_directory):
     if not os.path.exists(output_directory):
