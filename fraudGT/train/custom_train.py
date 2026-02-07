@@ -359,11 +359,17 @@ def custom_train(loggers, loaders, model, optimizer, scheduler):
     logging.info(f"Total train loop time: {np.sum(full_epoch_times) / 3600:.2f}h")
 
     # Save timing stats to JSON for throughput/latency analysis
+    samples_per_epoch = cfg.train.batch_size * cfg.train.iter_per_epoch
     timing_stats = {
         'full_epoch_times': full_epoch_times,
         'avg_epoch_time_s': float(np.mean(full_epoch_times)),
         'total_train_time_s': float(np.sum(full_epoch_times)),
         'num_epochs': len(full_epoch_times),
+        'samples_per_epoch': samples_per_epoch,
+        'throughput_samples_per_s': float(samples_per_epoch / np.mean(full_epoch_times)),
+        'latency_per_batch_ms': float(
+            np.mean(runtime_stats_cuda.cuda_times.get('forward', [0]))
+        ),
     }
     for region, times_ms in runtime_stats_cuda.cuda_times.items():
         timing_stats[f'{region}_mean_ms'] = float(np.mean(times_ms)) if times_ms else 0.0
