@@ -21,7 +21,7 @@ mkdir -p logs
 python -m fraudGT.main \
     --cfg configs/ETH/ETH-GATE.yaml \
     --gpu 0 \
-    --repeat 3 \
+    --repeat 5 \
     num_threads 6 num_workers 4
 
 echo "Job finished: $(date)"
