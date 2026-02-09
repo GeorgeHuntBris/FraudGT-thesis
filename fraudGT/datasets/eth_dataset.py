@@ -69,14 +69,14 @@ class ETHDataset(TemporalDataset):
         self.reverse_mp = reverse_mp
         self.add_ports = add_ports
         super().__init__(root, transform, pre_transform)
-        self.data_dict = torch.load(self.processed_paths[0])
+        self.data_dict = torch.load(self.processed_paths[0], weights_only=False)
         # del self._data['node'].x
         if not reverse_mp:
             for split in ['train', 'val', 'test']:
                 del self.data_dict[split]['node', 'rev_to', 'node']
             # del self.slices['node', 'rev_to', 'node']
         if add_ports:
-            self.ports_dict = torch.load(self.processed_paths[1])
+            self.ports_dict = torch.load(self.processed_paths[1], weights_only=False)
             for split in ['train', 'val', 'test']:
                 self.data_dict[split] = self.add_ports_func(self.data_dict[split], self.ports_dict[split])
 

@@ -176,7 +176,7 @@ def check_Node2Vec(pe_dir):
 
 def load_Node2Vec(pe_dir):
     embedding_path = osp.join(pe_dir, NODE2VEC_PT_NAME + '_' + str(cfg.posenc_Hetero_Node2Vec.dim_pe) + '.pt')
-    emb = torch.load(embedding_path)
+    emb = torch.load(embedding_path, weights_only=False)
     return emb['model']
 
 
@@ -461,7 +461,7 @@ def preprocess_Metapath(pe_dir, dataset):
                      num_nodes_dict=data.num_nodes_dict, sparse=True).to(device)
     if osp.exists(temp_path):
         print('Load last checkpoint...')
-        emb = torch.load(temp_path)
+        emb = torch.load(temp_path, weights_only=False)
         print(emb)
         model.embedding = emb['model'].to(device)
 
@@ -577,7 +577,7 @@ def check_Metapath(pe_dir):
 
 def load_Metapath(pe_dir):
     embedding_path = osp.join(pe_dir, METAPATH_PT_NAME + '_' + str(cfg.posenc_Hetero_Metapath.dim_pe) + '.pt')
-    emb = torch.load(embedding_path, map_location='cpu')
+    emb = torch.load(embedding_path, map_location='cpu', weights_only=False)
     return emb
 
 def preprocess_KGE(pe_dir, dataset, name):
@@ -696,7 +696,7 @@ def check_KGE(pe_dir, name):
 
 def load_KGE(pe_dir, name, dataset):
     embedding_dir = osp.join(pe_dir, f'{name}.pt')
-    emb = torch.load(embedding_dir)
+    emb = torch.load(embedding_dir, weights_only=False)
 
     count = 0
     start, end = {}, {}

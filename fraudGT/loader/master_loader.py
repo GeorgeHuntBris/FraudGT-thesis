@@ -356,7 +356,7 @@ def load_dataset_master(format, name, dataset_dir):
                 torch.save(results, file_path)
             
             from tqdm import tqdm
-            results = torch.load(file_path)
+            results = torch.load(file_path, weights_only=False)
             data_list = []
             for i in tqdm(range(len(dataset)),
                         mininterval=10,
@@ -772,7 +772,7 @@ def preformat_OGB_Node(dataset_dir, name):
             data['institution'].x = x[dataset.num_papers+dataset.num_authors :]
 
             path = f'{dataset.dir}/full_adj_t.pt'
-            adj_t_dict = torch.load(path)
+            adj_t_dict = torch.load(path, weights_only=False)
             for edge_type, adj_t in adj_t_dict.items():
                 data[edge_type].adj_t = adj_t
 
@@ -789,7 +789,7 @@ def preformat_OGB_Node(dataset_dir, name):
             os.mkdir(path)
             torch.save(data, osp.join(path, 'data.pt'))
     else:
-        data = torch.load(osp.join(path, 'data.pt'))
+        data = torch.load(osp.join(path, 'data.pt'), weights_only=False)
     
     r'''A fake OGB dataset. 
     Once the OGB dataset is preprocessed and transformed to sparse format, the original OGB

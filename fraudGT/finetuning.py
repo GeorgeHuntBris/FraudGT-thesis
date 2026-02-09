@@ -117,7 +117,7 @@ def init_model_from_pretrained(model, pretrained_dir,
     ckpt_file = get_final_pretrained_ckpt(osp.join(pretrained_dir, str(seed), 'ckpt'))
     logging.info(f"[*] Loading from pretrained model: {ckpt_file}")
 
-    ckpt = torch.load(ckpt_file, map_location=torch.device('cpu'))
+    ckpt = torch.load(ckpt_file, map_location=torch.device('cpu'), weights_only=False)
     pretrained_dict = ckpt[MODEL_STATE]
     model_dict = model.state_dict()
     
