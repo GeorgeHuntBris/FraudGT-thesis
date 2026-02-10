@@ -69,7 +69,7 @@ class AddEgoIdsForNeighbor(BaseTransform):
     def __init__(self):
         pass
 
-    def __call__(self, data: Union[Data, HeteroData]):
+    def forward(self, data: Union[Data, HeteroData]):
         x = data.x if not isinstance(data, HeteroData) else data['node'].x
         device = x.device
         ids = torch.zeros((x.shape[0], 1), device=device)
@@ -80,11 +80,11 @@ class AddEgoIdsForNeighbor(BaseTransform):
         ids[nodes] = 1
         if not isinstance(data, HeteroData):
             data.x = torch.cat([x, ids], dim=1)
-        else: 
+        else:
             data['node'].x = torch.cat([x, ids], dim=1)
-        
+
         return data
-    
+
 @register_sampler('hetero_neighbor')
 def get_NeighborLoader(dataset, batch_size, shuffle=True, split='train'):
     task = cfg.dataset.task_entity
@@ -772,7 +772,7 @@ class AddEgoIdsForLinkNeighbor(BaseTransform):
     def __init__(self):
         pass
 
-    def __call__(self, data: Union[Data, HeteroData]):
+    def forward(self, data: Union[Data, HeteroData]):
         x = data.x if not isinstance(data, HeteroData) else data['node'].x
         device = x.device
         ids = torch.zeros((x.shape[0], 1), device=device)
@@ -783,9 +783,9 @@ class AddEgoIdsForLinkNeighbor(BaseTransform):
         ids[nodes] = 1
         if not isinstance(data, HeteroData):
             data.x = torch.cat([x, ids], dim=1)
-        else: 
+        else:
             data['node'].x = torch.cat([x, ids], dim=1)
-        
+
         return data
 
 
