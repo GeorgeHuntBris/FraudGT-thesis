@@ -2,15 +2,17 @@ out_dir: ./results
 metric_best: f1
 seed: 42
 wandb:
-  use: True
+  use: False
   project: unifiedGT
 dataset:
   dir: ./data
   format: Elliptic
   name: elliptic
-  task: hetero_node              # Node classification (not edge)
+  reverse_mp: True
+  add_ports: True
+  task: hetero_node
   task_type: classification
-  task_entity: node             # Classify nodes (transactions)
+  task_entity: node
   transductive: True
   node_encoder: True
   node_encoder_name: Hetero_Raw
@@ -22,8 +24,9 @@ num_threads: 8
 num_workers: 4
 train:
   mode: custom
-  sampler: hetero_neighbor             # Node-level sampling (not link_neighbor)
+  sampler: hetero_neighbor
   neighbor_sizes: [50, 50]
+  add_ego_id: True
   iter_per_epoch: 256
   batch_size: 2048
   eval_period: 4
@@ -36,38 +39,29 @@ val:
   iter_per_epoch: 256
   tqdm: True
 model:
-  type: GTModel
+  type: HomoGNNEdgeModel
   loss_fun: weighted_cross_entropy
-  loss_fun_weight: [1, 45]      # ~2% illicit ratio in Elliptic (adjust if needed)
+  loss_fun_weight: [1, 45]
   edge_decoding: dot
   graph_pooling: mean
-gt:
-  head: hetero_node
-  layer_type: SparseNodeTransformer
-  layers_pre_gt: 0
-  layers: 2
-  layers_post_gt: 2
-  attn_heads: 8
-  dim_hidden: 64
-  input_dropout: 0.0
-  dropout: 0.2
-  attn_dropout: 0.3
-  batch_norm: False
-  layer_norm: True
-  l2_norm: False
-  act: gelu
-  attn_mask: Edge
-  residual: Fixed
-  ffn: Type
-  jumping_knowledge: False
 gnn:
-  dropout: 0.2
+  layer_type: PNA
+  layers_pre_mp: 0
+  layers_mp: 2
+  layers_post_mp: 2
+  dim_inner: 20
+  batch_norm: True
+  layer_norm: False
+  act: relu
+  input_dropout: 0.0
+  dropout: 0.0
+  agg: mean
 optim:
-  batch_accumulation: 8
+  batch_accumulation: 4
   clip_grad_norm: True
   optimizer: adamW
   weight_decay: 1e-5
-  base_lr: 0.001
+  base_lr: 0.005
   max_epoch: 500
   scheduler: cosine_with_warmup
   num_warmup_epochs: 5
