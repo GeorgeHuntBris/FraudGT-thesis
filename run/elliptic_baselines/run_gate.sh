@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=Ell-GATE
 #SBATCH --partition=gpu
+#SBATCH --account=COMS037985
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=24G

@@ -11,6 +11,7 @@
 # Partition — the pool of nodes to use. Change this to match
 # BluePebble's GPU partition name (check with: sinfo)
 #SBATCH --partition=gpu
+#SBATCH --account=COMS037985
 
 # Request 1 GPU
 #SBATCH --gres=gpu:1
