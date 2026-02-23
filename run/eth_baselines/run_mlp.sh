@@ -48,7 +48,7 @@ echo "GPU allocated: $CUDA_VISIBLE_DEVICES"
 
 # Activate your conda/virtualenv environment.
 # CHANGE THIS to match your environment name on BluePebble:
-source activate fraudgt
+source ~/fraudgt-env/bin/activate
 # Or if using virtualenv:
 # source ~/envs/fraudgt/bin/activate
 

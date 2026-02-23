@@ -14,7 +14,7 @@ echo "Running on node: $(hostname)"
 echo "GPU allocated: $CUDA_VISIBLE_DEVICES"
 
 # module load CUDA/11.8
-source activate fraudgt
+source ~/fraudgt-env/bin/activate
 
 cd $SLURM_SUBMIT_DIR
 mkdir -p logs
