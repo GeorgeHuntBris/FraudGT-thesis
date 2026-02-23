@@ -21,7 +21,7 @@ mkdir -p logs
 python -m fraudGT.main \
     --cfg configs/Elliptic/Elliptic-GINE.yaml \
     --gpu 0 \
-    --repeat 5 \
+    --repeat 3 \
     num_threads 6 num_workers 4
 
 echo "Job finished: $(date)"

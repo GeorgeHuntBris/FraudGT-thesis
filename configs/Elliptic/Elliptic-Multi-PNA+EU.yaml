@@ -55,6 +55,7 @@ gnn:
   act: relu
   input_dropout: 0.0
   dropout: 0.0
+  edge_updates: True
   agg: mean
 optim:
   batch_accumulation: 4

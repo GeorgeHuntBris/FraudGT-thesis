@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=Ell-FraudGT
+#SBATCH --job-name=Ell-MultiPNA-EU
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
@@ -19,7 +19,7 @@ cd $SLURM_SUBMIT_DIR
 mkdir -p logs
 
 python -m fraudGT.main \
-    --cfg configs/Elliptic/Elliptic-SparseNodeGT.yaml \
+    --cfg configs/Elliptic/Elliptic-Multi-PNA+EU.yaml \
     --gpu 0 \
     --repeat 3 \
     num_threads 6 num_workers 4
