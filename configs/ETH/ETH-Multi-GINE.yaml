@@ -25,7 +25,8 @@ num_workers: 18
 train:
   mode: custom
   sampler: hetero_neighbor
-  neighbor_sizes: [1000, 1000] # 50 * 2
+  neighbor_sizes: [50, 50]
+  add_ego_id: True
   iter_per_epoch: 256
   batch_size: 2048
   eval_period: 4
