@@ -2,7 +2,7 @@ out_dir: ./results
 metric_best: f1
 seed: 42
 wandb:
-  use: True
+  use: False
   project: unifiedGT
 dataset:
   dir: ./data
@@ -52,8 +52,8 @@ gt:
   attn_heads: 8
   dim_hidden: 64  # `gt.dim_hidden` must match `gnn.dim_inner`
   input_dropout: 0.0
-  dropout: 0.5     # global transformer dropout
-  attn_dropout: 0.3
+  dropout: 0.6     # global transformer dropout
+  attn_dropout: 0.4
   batch_norm: False
   layer_norm: True
   l2_norm: False
@@ -68,7 +68,7 @@ optim:
   batch_accumulation: 8
   clip_grad_norm: True
   optimizer: adamW
-  weight_decay: 1e-5
+  weight_decay: 1e-4
   base_lr: 0.001
   max_epoch: 500
   scheduler: cosine_with_warmup
