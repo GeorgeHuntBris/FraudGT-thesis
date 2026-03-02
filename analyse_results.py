@@ -1,7 +1,7 @@
 import json, os
 import numpy as np
 
-results_dir = os.path.expanduser("~/FraudGT-thesis/results")
+results_dir = os.path.expanduser("~/Desktop/thesis/FraudGT/results")
 
 BATCH_SIZE = 2048  # same across all models/datasets
 

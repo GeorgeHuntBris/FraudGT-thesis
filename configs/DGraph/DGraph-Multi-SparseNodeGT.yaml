@@ -53,7 +53,7 @@ gt:
   attn_heads: 8
   dim_hidden: 64
   input_dropout: 0.0
-  dropout: 0.5
+  dropout: 0.35
   attn_dropout: 0.3
   batch_norm: False
   layer_norm: True
@@ -64,7 +64,7 @@ gt:
   ffn: Type
   jumping_knowledge: False
 gnn:
-  dropout: 0.5
+  dropout: 0.35
 optim:
   batch_accumulation: 8
   clip_grad_norm: True
