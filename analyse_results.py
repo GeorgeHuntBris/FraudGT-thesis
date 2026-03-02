@@ -140,6 +140,12 @@ print("BITCOIN-M RESULTS (Val metrics @ best val F1 epoch, up to 5 seeds)")
 print("=" * 185)
 analyse("BitcoinM-", best_metric="f1")
 
+print()
+print("=" * 185)
+print("ETHEREUM-P RESULTS (Val metrics @ best val F1 epoch, up to 5 seeds)")
+print("=" * 185)
+analyse("EthereumP-", best_metric="f1")
+
 # =============================================================================
 # THROUGHPUT AND LATENCY  (FraudGT paper Fig 3 methodology)
 # Throughput = batch_size / mean_per_batch_inference_time  (trans/s)
@@ -169,3 +175,9 @@ print("=" * 80)
 print("THROUGHPUT AND LATENCY — Bitcoin-M")
 print("=" * 80)
 analyse_throughput("BitcoinM-")
+
+print()
+print("=" * 80)
+print("THROUGHPUT AND LATENCY — Ethereum-P")
+print("=" * 80)
+analyse_throughput("EthereumP-")
