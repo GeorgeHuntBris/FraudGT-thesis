@@ -1,5 +1,5 @@
 out_dir: ./results
-metric_best: f1
+metric_best: auc
 seed: 42
 wandb:
   use: False
@@ -38,7 +38,7 @@ val:
 model:
   type: HomoGNNEdgeModel
   loss_fun: weighted_cross_entropy
-  loss_fun_weight: [1, 50]
+  loss_fun_weight: [1, 1]
   edge_decoding: dot
   graph_pooling: mean
 gnn:
