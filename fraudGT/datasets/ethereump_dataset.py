@@ -135,14 +135,13 @@ class EthereumPDataset(TemporalDataset):
 
         raw = torch.load(osp.join(self.raw_dir, 'data.pt'), weights_only=False)
 
-        num_nodes = raw.X.shape[0]
+        num_nodes = raw.y.shape[0]
         print(f"Number of nodes: {num_nodes:,}")
         print(f"Number of edges: {raw.edge_index.shape[1]:,}")
-        print(f"Node feature dim: {raw.X.shape[1]}")
         print(f"Edge feature dim: {raw.edge_attr.shape[1]}")
 
-        # Node features: float64 -> float32 and z-normalise
-        x = z_norm(raw.X.float())
+        # No raw node features — use placeholder of all 1s (same as ETH dataset)
+        x = torch.ones(num_nodes, 1)
 
         # Labels: -1=unlabeled, 0=normal, 1=illicit/phishing
         y = raw.y.long()
