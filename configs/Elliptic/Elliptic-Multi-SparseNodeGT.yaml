@@ -41,7 +41,7 @@ val:
 model:
   type: GTModel
   loss_fun: weighted_cross_entropy
-  loss_fun_weight: [1, 45]
+  loss_fun_weight: [1, 3]
   edge_decoding: dot
   graph_pooling: mean
 gt:

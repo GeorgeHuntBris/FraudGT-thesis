@@ -41,7 +41,7 @@ val:
 model:
   type: HomoGNNEdgeModel
   loss_fun: weighted_cross_entropy
-  loss_fun_weight: [1, 7]
+  loss_fun_weight: [1, 50]
   edge_decoding: dot
   graph_pooling: mean
 gnn:
