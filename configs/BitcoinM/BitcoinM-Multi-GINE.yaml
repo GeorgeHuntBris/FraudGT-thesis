@@ -1,13 +1,13 @@
 out_dir: ./results
-metric_best: auc
+metric_best: f1
 seed: 42
 wandb:
   use: False
   project: unifiedGT
 dataset:
   dir: ./data
-  format: DGraph
-  name: DGraph
+  format: BitcoinM
+  name: BitcoinM
   reverse_mp: True
   add_ports: True
   task: hetero_node
@@ -41,7 +41,7 @@ val:
 model:
   type: HomoGNNEdgeModel
   loss_fun: weighted_cross_entropy
-  loss_fun_weight: [1, 1]
+  loss_fun_weight: [1, 5]
   edge_decoding: dot
   graph_pooling: mean
 gnn:

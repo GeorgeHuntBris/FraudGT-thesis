@@ -18,8 +18,8 @@ dataset:
   edge_encoder: True
   edge_encoder_name: Hetero_Raw
   edge_encoder_bn: False
-num_threads: 24
-num_workers: 18
+num_threads: 8
+num_workers: 4
 train:
   mode: custom
   sampler: hetero_neighbor

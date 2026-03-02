@@ -22,6 +22,7 @@ from fraudGT.datasets.aml_dataset import AMLDataset
 from fraudGT.datasets.eth_dataset import ETHDataset
 from fraudGT.datasets.elliptic_dataset import EllipticDataset
 from fraudGT.datasets.dgraph_dataset import DGraphDataset
+from fraudGT.datasets.bitcoinm_dataset import BitcoinMDataset
 from fraudGT.datasets.temporal_dataset import TemporalDataset
 from fraudGT.graphgym.config import cfg
 from fraudGT.graphgym.loader import load_pyg, load_ogb, set_dataset_attr
@@ -233,6 +234,10 @@ def load_dataset_master(format, name, dataset_dir):
     elif format == 'DGraph':
         dataset_dir = osp.join(dataset_dir, format)
         dataset = preformat_DGraph(dataset_dir)
+
+    elif format == 'BitcoinM':
+        dataset_dir = osp.join(dataset_dir, format)
+        dataset = preformat_BitcoinM(dataset_dir)
 
     else:
         raise ValueError(f"Unknown data format: {format}")
@@ -871,6 +876,20 @@ def preformat_DGraph(dataset_dir):
     """
     dataset = DGraphDataset(root=dataset_dir, reverse_mp=cfg.dataset.reverse_mp,
                             add_ports=cfg.dataset.add_ports)
+    return dataset
+
+
+def preformat_BitcoinM(dataset_dir):
+    """Load and preformat Bitcoin-M illicit transaction detection dataset.
+
+    Args:
+        dataset_dir: path where to store the cached dataset
+
+    Returns:
+        PyG dataset object
+    """
+    dataset = BitcoinMDataset(root=dataset_dir, reverse_mp=cfg.dataset.reverse_mp,
+                              add_ports=cfg.dataset.add_ports)
     return dataset
 
 

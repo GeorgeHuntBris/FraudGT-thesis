@@ -1,13 +1,13 @@
 out_dir: ./results
-metric_best: auc
+metric_best: f1
 seed: 42
 wandb:
   use: False
   project: unifiedGT
 dataset:
   dir: ./data
-  format: DGraph
-  name: DGraph
+  format: BitcoinM
+  name: BitcoinM
   reverse_mp: True
   add_ports: True
   task: hetero_node
@@ -39,29 +39,38 @@ val:
   iter_per_epoch: 256
   tqdm: True
 model:
-  type: HomoGNNEdgeModel
+  type: GTModel
   loss_fun: weighted_cross_entropy
-  loss_fun_weight: [1, 1]
+  loss_fun_weight: [1, 5]
   edge_decoding: dot
   graph_pooling: mean
-gnn:
-  layer_type: GINE
-  layers_pre_mp: 0
-  layers_mp: 2
-  layers_post_mp: 2
-  dim_inner: 64
-  batch_norm: True
-  layer_norm: False
-  act: relu
+gt:
+  head: hetero_node
+  layer_type: SparseNodeTransformer
+  layers_pre_gt: 0
+  layers: 2
+  layers_post_gt: 2
+  attn_heads: 8
+  dim_hidden: 64
   input_dropout: 0.0
-  dropout: 0.0
-  agg: mean
+  dropout: 0.5
+  attn_dropout: 0.3
+  batch_norm: False
+  layer_norm: True
+  l2_norm: False
+  act: gelu
+  attn_mask: Edge
+  residual: Fixed
+  ffn: Type
+  jumping_knowledge: False
+gnn:
+  dropout: 0.5
 optim:
-  batch_accumulation: 4
+  batch_accumulation: 8
   clip_grad_norm: True
   optimizer: adamW
   weight_decay: 1e-5
-  base_lr: 0.005
+  base_lr: 0.001
   max_epoch: 500
   scheduler: cosine_with_warmup
   num_warmup_epochs: 5
