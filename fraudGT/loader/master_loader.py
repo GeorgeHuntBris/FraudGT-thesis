@@ -21,6 +21,7 @@ from torch_geometric.datasets import (DBLP, IMDB, OGB_MAG, Planetoid, MovieLens)
 from fraudGT.datasets.aml_dataset import AMLDataset
 from fraudGT.datasets.eth_dataset import ETHDataset
 from fraudGT.datasets.elliptic_dataset import EllipticDataset
+from fraudGT.datasets.dgraph_dataset import DGraphDataset
 from fraudGT.datasets.temporal_dataset import TemporalDataset
 from fraudGT.graphgym.config import cfg
 from fraudGT.graphgym.loader import load_pyg, load_ogb, set_dataset_attr
@@ -228,6 +229,10 @@ def load_dataset_master(format, name, dataset_dir):
     elif format == 'Elliptic':
         dataset_dir = osp.join(dataset_dir, format)
         dataset = preformat_Elliptic(dataset_dir, name)
+
+    elif format == 'DGraph':
+        dataset_dir = osp.join(dataset_dir, format)
+        dataset = preformat_DGraph(dataset_dir)
 
     else:
         raise ValueError(f"Unknown data format: {format}")
@@ -853,6 +858,20 @@ def preformat_Elliptic(dataset_dir, name):
                               add_ports=cfg.dataset.add_ports)
     return dataset
 
+
+
+def preformat_DGraph(dataset_dir):
+    """Load and preformat DGraph-Fin fraud detection dataset.
+
+    Args:
+        dataset_dir: path where to store the cached dataset
+
+    Returns:
+        PyG dataset object
+    """
+    dataset = DGraphDataset(root=dataset_dir, reverse_mp=cfg.dataset.reverse_mp,
+                            add_ports=cfg.dataset.add_ports)
+    return dataset
 
 
 def join_dataset_splits(datasets):
