@@ -66,10 +66,12 @@ class EllipticDataset(TemporalDataset):
         pre_transform: Optional pre-transform to apply to data
     """
 
-    # Train on time steps 1-34, validate on 35-42, test on 43-49
-    TRAIN_TIME_STEPS = list(range(1, 35))   # 34 time steps
-    VAL_TIME_STEPS = list(range(35, 43))    # 8 time steps
-    TEST_TIME_STEPS = list(range(43, 50))   # 7 time steps
+    # Train on time steps 1-30, validate on 31-36, test on 37-42
+    # Excludes timesteps 43-49 (post dark market shutdown at timestep 43)
+    # Gives a standard ~70/15/15 temporal split on pre-shutdown data
+    TRAIN_TIME_STEPS = list(range(1, 31))   # 30 time steps
+    VAL_TIME_STEPS = list(range(31, 37))    # 6 time steps
+    TEST_TIME_STEPS = list(range(37, 43))   # 6 time steps
 
     def __init__(
         self,
