@@ -3,7 +3,7 @@ import numpy as np
 
 results_dir = os.path.expanduser("~/FraudGT-thesis/results")
 
-def get_metrics(model_path, max_seeds=3):
+def get_metrics(model_path, max_seeds=5):
     seed_dirs = sorted([d for d in os.listdir(model_path) if d.isdigit()])[:max_seeds]
     metrics = {k: [] for k in ["f1", "precision", "recall", "accuracy", "macro_f1", "auc",
                                 "test_f1", "test_precision", "test_recall", "test_accuracy", "test_auc"]}
@@ -54,12 +54,12 @@ def analyse(prefix):
             print(f"{name:<30} no results")
 
 print("=" * 155)
-print("ELLIPTIC RESULTS (Val metrics @ best val F1 epoch, 3 seeds)")
+print("ELLIPTIC RESULTS (Val metrics @ best val F1 epoch, up to 5 seeds)")
 print("=" * 155)
 analyse("Elliptic-")
 
 print()
 print("=" * 155)
-print("ETH RESULTS (Val metrics @ best val F1 epoch, first 3 seeds)")
+print("ETH RESULTS (Val metrics @ best val F1 epoch, up to 5 seeds)")
 print("=" * 155)
 analyse("ETH-")
