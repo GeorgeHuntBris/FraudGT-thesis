@@ -152,6 +152,16 @@ class DGraphDataset(TemporalDataset):
         x = z_norm(raw.x.float())
         y = raw.y.squeeze().long()
 
+        # Use provided train/val/test masks from DGraphFin
+        train_mask = raw.train_mask
+        val_mask = raw.val_mask
+        test_mask = raw.test_mask
+
+        # Background nodes (not in any split) have labels > 1 — mask them to -1
+        # so the framework sees only binary labels (0=normal, 1=fraud)
+        foreground_mask = train_mask | val_mask | test_mask
+        y[~foreground_mask] = -1
+
         # Edge features: combine edge_type [E] and edge_time [E] into [E, 2]
         edge_type = raw.edge_type.float().unsqueeze(1)
         edge_time = raw.edge_time.float().unsqueeze(1)
@@ -159,11 +169,6 @@ class DGraphDataset(TemporalDataset):
 
         edge_index = raw.edge_index
         timestamps = raw.edge_time.float()
-
-        # Use provided train/val/test masks from DGraphFin
-        train_mask = raw.train_mask
-        val_mask = raw.val_mask
-        test_mask = raw.test_mask
 
         print(f"Train nodes: {train_mask.sum().item()}")
         print(f"Val nodes: {val_mask.sum().item()}")
