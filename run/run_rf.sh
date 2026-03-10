@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=RF-Baseline
-#SBATCH --partition=cpu
+#SBATCH --partition=compute
 #SBATCH --account=COMS037985
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32G
