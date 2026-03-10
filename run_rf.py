@@ -56,7 +56,8 @@ def run_dataset(name, data_path):
 
     for seed in range(N_SEEDS):
         clf = RandomForestClassifier(
-            n_estimators=500,
+            n_estimators=50,
+            max_features=50,
             class_weight='balanced',
             random_state=seed,
             n_jobs=-1
