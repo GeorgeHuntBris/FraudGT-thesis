@@ -130,9 +130,9 @@ analyse("ETH-", best_metric="f1")
 
 print()
 print("=" * 185)
-print("DGRAPH RESULTS (Val metrics @ best val AUC epoch, up to 5 seeds)")
+print("DGRAPH RESULTS (Val metrics @ best val F1 epoch, up to 5 seeds)")
 print("=" * 185)
-analyse("DGraph-", best_metric="auc")
+analyse("DGraph-", best_metric="f1")
 
 print()
 print("=" * 185)
