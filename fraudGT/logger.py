@@ -7,8 +7,8 @@ import numpy as np
 import torch
 from scipy.stats import stats
 from sklearn.metrics import accuracy_score, precision_score, recall_score, \
-    f1_score, roc_auc_score, mean_absolute_error, mean_squared_error, \
-    confusion_matrix
+    f1_score, roc_auc_score, average_precision_score, \
+    mean_absolute_error, mean_squared_error, confusion_matrix
 from sklearn.metrics import r2_score
 from fraudGT.graphgym.config import cfg
 from fraudGT.graphgym.logger import infer_task, Logger
@@ -147,6 +147,12 @@ class CustomLogger(Logger):
         else:
             auroc_score = 0.
 
+        try:
+            ap_score = average_precision_score(true.cpu().numpy(),
+                                               pred_score.cpu().numpy())
+        except ValueError:
+            ap_score = 0.0
+
         reformat = lambda x: round(float(x), cfg.round)
         res = {
             'accuracy': reformat(accuracy_score(true, pred_int)),
@@ -156,6 +162,7 @@ class CustomLogger(Logger):
             'macro-f1': reformat(f1_score(true, pred_int, average='macro')),
             'micro-f1': reformat(f1_score(true, pred_int, average='micro')),
             'auc': reformat(auroc_score),
+            'ap': reformat(ap_score),
         }
         if cfg.metric_best == 'accuracy-SBM':
             res['accuracy-SBM'] = reformat(accuracy_SBM(true, pred_int))
