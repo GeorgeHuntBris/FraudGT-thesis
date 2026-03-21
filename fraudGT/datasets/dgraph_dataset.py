@@ -188,9 +188,12 @@ class DGraphDataset(TemporalDataset):
         node_val = torch.cat([train_inds, val_inds])
         node_test = torch.cat([train_inds, val_inds, test_inds])
 
-        e_train = torch.isin(edge_index[0], node_train) & torch.isin(edge_index[1], node_train)
-        e_val = torch.isin(edge_index[0], node_val) & torch.isin(edge_index[1], node_val)
-        e_test = torch.isin(edge_index[0], node_test) & torch.isin(edge_index[1], node_test)
+        # Keep ALL edges (including background nodes) to preserve graph connectivity.
+        # DGraph is transductive, so all edges are visible during training.
+        # Background nodes (66.8% of all nodes) are essential for connectivity.
+        e_train = torch.ones(edge_index.shape[1], dtype=torch.bool)
+        e_val   = torch.ones(edge_index.shape[1], dtype=torch.bool)
+        e_test  = torch.ones(edge_index.shape[1], dtype=torch.bool)
 
         num_nodes = raw.num_nodes
         self.ports_dict = {}
