@@ -261,10 +261,12 @@ class EllipticDataset(TemporalDataset):
         node_val = torch.cat([train_inds, val_inds])
         node_test = torch.cat([train_inds, val_inds, test_inds])
 
-        # Edge masks based on cumulative node sets
-        e_train = torch.isin(edge_index[0], node_train) & torch.isin(edge_index[1], node_train)
-        e_val = torch.isin(edge_index[0], node_val) & torch.isin(edge_index[1], node_val)
-        e_test = torch.isin(edge_index[0], node_test) & torch.isin(edge_index[1], node_test)
+        # Keep ALL edges (including unlabeled nodes) to preserve graph connectivity.
+        # Elliptic is transductive and ~79% of nodes are unlabeled — filtering by
+        # labeled endpoints would destroy connectivity just as in DGraph.
+        e_train = torch.ones(edge_index.shape[1], dtype=torch.bool)
+        e_val   = torch.ones(edge_index.shape[1], dtype=torch.bool)
+        e_test  = torch.ones(edge_index.shape[1], dtype=torch.bool)
 
         # Build data for each split
         self.ports_dict = {}
