@@ -7,7 +7,7 @@ Run: python run_rf.py
 import torch
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score
+from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score, average_precision_score
 import os
 
 DATA_DIR = os.path.expanduser("~/FraudGT-thesis/data")
@@ -21,7 +21,8 @@ def evaluate(clf, X, y):
     prec = precision_score(y, pred, zero_division=0)
     rec  = recall_score(y, pred, zero_division=0)
     auc  = roc_auc_score(y, prob) if len(np.unique(y)) > 1 else 0.0
-    return f1, prec, rec, auc
+    ap   = average_precision_score(y, prob) if len(np.unique(y)) > 1 else 0.0
+    return f1, prec, rec, auc, ap
 
 
 def run_dataset(name, data_path):
@@ -64,22 +65,24 @@ def run_dataset(name, data_path):
         )
         clf.fit(X_train, y_train)
 
-        vf, vp, vr, va = evaluate(clf, X_val, y_val)
-        tf, tp, tr, ta = evaluate(clf, X_test, y_test)
+        vf, vp, vr, va, vap = evaluate(clf, X_val, y_val)
+        tf, tp, tr, ta, tap = evaluate(clf, X_test, y_test)
 
-        val_results.append((vf, vp, vr, va))
-        test_results.append((tf, tp, tr, ta))
+        val_results.append((vf, vp, vr, va, vap))
+        test_results.append((tf, tp, tr, ta, tap))
 
-        print(f"  Seed {seed} | Val  F1={vf:.4f} Prec={vp:.4f} Rec={vr:.4f} AUC={va:.4f}")
-        print(f"           | Test F1={tf:.4f} Prec={tp:.4f} Rec={tr:.4f} AUC={ta:.4f}")
+        print(f"  Seed {seed} | Val  F1={vf:.4f} Prec={vp:.4f} Rec={vr:.4f} AUC={va:.4f} AP={vap:.4f}")
+        print(f"           | Test F1={tf:.4f} Prec={tp:.4f} Rec={tr:.4f} AUC={ta:.4f} AP={tap:.4f}")
 
     val_arr  = np.array(val_results)
     test_arr = np.array(test_results)
 
     print(f"\n  MEAN Val  | F1={val_arr[:,0].mean():.4f}±{val_arr[:,0].std():.4f} "
-          f"Prec={val_arr[:,1].mean():.4f} Rec={val_arr[:,2].mean():.4f} AUC={val_arr[:,3].mean():.4f}")
+          f"Prec={val_arr[:,1].mean():.4f} Rec={val_arr[:,2].mean():.4f} "
+          f"AUC={val_arr[:,3].mean():.4f} AP={val_arr[:,4].mean():.4f}")
     print(f"  MEAN Test | F1={test_arr[:,0].mean():.4f}±{test_arr[:,0].std():.4f} "
-          f"Prec={test_arr[:,1].mean():.4f} Rec={test_arr[:,2].mean():.4f} AUC={test_arr[:,3].mean():.4f}")
+          f"Prec={test_arr[:,1].mean():.4f} Rec={test_arr[:,2].mean():.4f} "
+          f"AUC={test_arr[:,3].mean():.4f} AP={test_arr[:,4].mean():.4f}")
 
 
 if __name__ == "__main__":
