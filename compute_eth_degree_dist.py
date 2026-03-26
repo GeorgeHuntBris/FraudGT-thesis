@@ -8,7 +8,7 @@ data_dict = torch.load('data/ETH/processed/data.pt', weights_only=False)
 data = data_dict['test']
 edge_index = data['node', 'to', 'node'].edge_index
 
-degree = torch.bincount(edge_index[0])
+degree = torch.bincount(edge_index[0], minlength=data['node'].num_nodes)
 
 print(f'Total nodes: {data["node"].num_nodes:,}')
 print(f'Total edges: {edge_index.shape[1]:,}')
