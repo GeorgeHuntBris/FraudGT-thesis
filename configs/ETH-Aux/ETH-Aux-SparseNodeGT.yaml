@@ -61,6 +61,7 @@ gt:
   jumping_knowledge: False
   head: hetero_node_edge_aux
   aux_lambda: 0.5
+  edge_combine_weight: 0.5
 gnn:
   dropout: 0.0
 optim:
