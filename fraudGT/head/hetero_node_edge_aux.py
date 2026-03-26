@@ -1,18 +1,23 @@
 """
-Node classification head with auxiliary edge scoring task.
+Node classification head with edge scoring task.
 
-The main task is node classification (same as hetero_node).
-The auxiliary task supervises edge embeddings with soft phishing labels,
-encouraging the transformer to learn which transactions lead to phishing nodes.
+Training:
+  - Node head trained with weighted cross-entropy against ground truth node labels.
+  - Edge head trained with soft BCE labels: max(1/in_degree, 0.1) for edges
+    pointing to confirmed phishing nodes, 0 otherwise.
+  - Total loss = node_loss + aux_lambda * edge_loss.
 
-Auxiliary loss is stored as self.aux_loss after each forward pass so the
-training loop can add it to the main classification loss.
+Test/validation:
+  - Edge head scores each edge, aggregated (max) per destination node to
+    produce a node-level suspicion signal from incoming transactions.
+  - Final prediction = node_logit + edge_combine_weight * aggregated_edge_score.
 """
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.data import HeteroData
+from torch_geometric.utils import scatter
 
 from fraudGT.graphgym.register import register_head
 from fraudGT.graphgym.config import cfg
@@ -21,7 +26,7 @@ from fraudGT.graphgym.models.layer import MLP
 
 @register_head('hetero_node_edge_aux')
 class HeteroNodeEdgeAuxHead(nn.Module):
-    """Node classification head with auxiliary soft edge classification."""
+    """Node classification head with edge scoring combined at inference."""
 
     def __init__(self, dim_in, dim_out, dataset):
         super().__init__()
@@ -33,13 +38,14 @@ class HeteroNodeEdgeAuxHead(nn.Module):
             num_layers=max(cfg.gnn.layers_post_mp, cfg.gt.layers_post_gt),
             bias=True)
 
-        # Auxiliary edge scoring head: edge_attr -> scalar suspicion score
+        # Edge scoring head: edge_attr -> scalar suspicion score
         self.edge_aux_head = MLP(
             dim_in, 1,
             num_layers=2,
             bias=True)
 
         self.aux_lambda = cfg.gt.aux_lambda
+        self.edge_combine_weight = cfg.gt.edge_combine_weight
         self.aux_loss = None
 
     def _apply_index(self, batch):
@@ -58,31 +64,50 @@ class HeteroNodeEdgeAuxHead(nn.Module):
             return batch.x[batch[mask]], batch.y[batch[mask]]
 
     def forward(self, batch):
-        # --- Main node classification ---
+        edge_type = ('node', 'to', 'node')
+        task = cfg.dataset.task_entity
+
+        # --- Node head ---
         if isinstance(batch, HeteroData):
-            x = batch[cfg.dataset.task_entity].x
-            x = self.node_head(x)
-            batch[cfg.dataset.task_entity].x = x
+            node_logits = self.node_head(batch[task].x)
         else:
-            batch.x = self.node_head(batch.x)
+            node_logits = self.node_head(batch.x)
 
-        pred, label = self._apply_index(batch)
-
-        # --- Auxiliary edge task (training only) ---
+        # --- Edge head (train and test) ---
         self.aux_loss = None
-        if self.training:
-            edge_type = ('node', 'to', 'node')
-            if isinstance(batch, HeteroData) and \
-                    hasattr(batch[edge_type], 'edge_soft_label') and \
-                    hasattr(batch[edge_type], 'edge_attr'):
+        if isinstance(batch, HeteroData) and \
+                hasattr(batch[edge_type], 'edge_attr'):
 
-                edge_attr = batch[edge_type].edge_attr
+            edge_attr = batch[edge_type].edge_attr
+            edge_index = batch[edge_type].edge_index
+            num_nodes = node_logits.shape[0]
+            dst_nodes = edge_index[1]
+
+            edge_scores = self.edge_aux_head(edge_attr).squeeze(-1)  # (E,)
+
+            # Training: soft BCE loss against pre-computed soft labels
+            if self.training and hasattr(batch[edge_type], 'edge_soft_label'):
                 edge_soft_label = batch[edge_type].edge_soft_label.to(
                     edge_attr.device)
-
-                edge_scores = self.edge_aux_head(edge_attr).squeeze(-1)
                 aux_loss = F.binary_cross_entropy_with_logits(
                     edge_scores, edge_soft_label)
                 self.aux_loss = self.aux_lambda * aux_loss
 
+            # Aggregate per destination node: max incoming suspicion score
+            edge_scores_sigmoid = torch.sigmoid(edge_scores)
+            node_edge_signal = scatter(
+                edge_scores_sigmoid, dst_nodes,
+                dim=0, dim_size=num_nodes, reduce='max')  # (N,)
+
+            # Combine node logits with aggregated edge signal
+            node_logits = node_logits + \
+                self.edge_combine_weight * node_edge_signal.unsqueeze(-1)
+
+        # Write combined logits back for _apply_index
+        if isinstance(batch, HeteroData):
+            batch[task].x = node_logits
+        else:
+            batch.x = node_logits
+
+        pred, label = self._apply_index(batch)
         return pred, label
