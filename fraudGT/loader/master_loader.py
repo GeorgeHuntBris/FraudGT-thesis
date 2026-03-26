@@ -20,6 +20,7 @@ from ogb.nodeproppred import PygNodePropPredDataset
 from torch_geometric.datasets import (DBLP, IMDB, OGB_MAG, Planetoid, MovieLens)
 from fraudGT.datasets.aml_dataset import AMLDataset
 from fraudGT.datasets.eth_dataset import ETHDataset
+from fraudGT.datasets.eth_aux_dataset import ETHAuxDataset
 from fraudGT.datasets.elliptic_dataset import EllipticDataset
 from fraudGT.datasets.dgraph_dataset import DGraphDataset
 from fraudGT.datasets.ethereump_dataset import EthereumPDataset
@@ -227,6 +228,11 @@ def load_dataset_master(format, name, dataset_dir):
     elif format == 'ETH':
         dataset_dir = osp.join(dataset_dir, format)
         dataset = preformat_ETH(dataset_dir)
+
+    elif format == 'ETH-Aux':
+        dataset_dir = osp.join(dataset_dir, 'ETH')
+        dataset = preformat_ETH_Aux(dataset_dir)
+
     # Add case for Elliptic dataset
     elif format == 'Elliptic':
         dataset_dir = osp.join(dataset_dir, format)
@@ -851,6 +857,13 @@ def preformat_ETH(dataset_dir):
     # transform = T.ToUndirected(merge=True)
     dataset = ETHDataset(root=dataset_dir, reverse_mp=cfg.dataset.reverse_mp,
                          add_ports=cfg.dataset.add_ports)
+    return dataset
+
+
+def preformat_ETH_Aux(dataset_dir):
+    """Load ETH dataset with auxiliary soft edge labels."""
+    dataset = ETHAuxDataset(root=dataset_dir, reverse_mp=cfg.dataset.reverse_mp,
+                            add_ports=cfg.dataset.add_ports)
     return dataset
 
 

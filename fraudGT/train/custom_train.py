@@ -143,6 +143,11 @@ def train_epoch(cur_epoch, logger, loader, model, optimizer, scheduler, batch_ac
                 loss, pred_score = compute_loss(pred, true, cur_epoch)
             else:
                 loss, pred_score = compute_loss(pred, true)
+            # Auxiliary edge loss (e.g. ETH-Aux hetero_node_edge_aux head)
+            if hasattr(model, 'post_gt') and \
+                    hasattr(model.post_gt, 'aux_loss') and \
+                    model.post_gt.aux_loss is not None:
+                loss = loss + model.post_gt.aux_loss
             _true = true.detach().to('cpu', non_blocking=True)
             _pred = pred_score.detach().to('cpu', non_blocking=True)
             runtime_stats_cuda.end_region("loss")

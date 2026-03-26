@@ -79,6 +79,9 @@ def set_cfg_gt(cfg):
 
     cfg.gt.virtual_nodes = 0
 
+    # Weight for auxiliary edge classification loss (used by hetero_node_edge_aux head)
+    cfg.gt.aux_lambda = 0.5
+
     # BigBird model/GPS-BigBird layer.
     # cfg.gt.bigbird = CN()
 
