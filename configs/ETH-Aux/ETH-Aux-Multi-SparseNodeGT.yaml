@@ -7,7 +7,7 @@ wandb:
 dataset:
   dir: ./data
   format: ETH-Aux
-  name: ETH-Aux
+  name: ETH-Aux-Multi
   reverse_mp: True
   add_ports: True
   task: hetero_node

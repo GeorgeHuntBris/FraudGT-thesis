@@ -7,7 +7,7 @@ wandb:
 dataset:
   dir: ./data
   format: ETH-Aux
-  name: ETH-Aux
+  name: ETH-Aux-Sparse
   task: hetero_node
   task_type: classification
   task_entity: node
