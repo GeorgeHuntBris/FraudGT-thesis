@@ -24,6 +24,7 @@ num_threads: 24
 num_workers: 18
 train:
   mode: custom
+  auto_resume: True
   sampler: hetero_neighbor
   neighbor_sizes: [50, 50]
   add_ego_id: True
