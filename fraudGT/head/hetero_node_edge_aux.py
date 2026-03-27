@@ -45,7 +45,8 @@ class HeteroNodeEdgeAuxHead(nn.Module):
             bias=True)
 
         self.aux_lambda = cfg.gt.aux_lambda
-        self.edge_combine_weight = cfg.gt.edge_combine_weight
+        self.edge_combine_weight = nn.Parameter(
+            torch.tensor(cfg.gt.edge_combine_weight))
         self.aux_loss = None
 
     def _apply_index(self, batch):
