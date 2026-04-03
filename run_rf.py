@@ -14,9 +14,14 @@ DATA_DIR = os.path.expanduser("~/FraudGT-thesis/data")
 N_SEEDS = 3
 
 
+# Takes a trained classifier, feature matrix X and true labels y
 def evaluate(clf, X, y):
+    # Hard predictions for each node
     pred = clf.predict(X)
+
+    # Returns col 0 = prob normal and col 1 = prob fraud
     prob = clf.predict_proba(X)[:, 1]
+
     f1   = f1_score(y, pred, zero_division=0)
     prec = precision_score(y, pred, zero_division=0)
     rec  = recall_score(y, pred, zero_division=0)
@@ -30,9 +35,10 @@ def run_dataset(name, data_path):
     print(f"RANDOM FOREST — {name}")
     print(f"{'='*60}")
 
+    # Convert binary file back into python object
     data_dict = torch.load(data_path, weights_only=False)
-    data = data_dict['train']  # use train split to get full masks
 
+    data = data_dict['train']  # use train split to get full masks (could use any i.e train/val/test)
     x = data['node'].x.numpy()
     y = data['node'].y.numpy()
 
@@ -40,7 +46,7 @@ def run_dataset(name, data_path):
     val_mask   = data['node'].val_mask.numpy()
     test_mask  = data['node'].test_mask.numpy()
 
-    # Filter out unlabeled nodes (label == -1)
+    # Filter out unlabeled nodes (label == -1) (we can include unlabeled for GNNs but not for the RF)
     train_idx = np.where(train_mask & (y != -1))[0]
     val_idx   = np.where(val_mask   & (y != -1))[0]
     test_idx  = np.where(test_mask  & (y != -1))[0]
