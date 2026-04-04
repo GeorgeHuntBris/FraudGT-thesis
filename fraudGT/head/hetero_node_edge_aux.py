@@ -117,10 +117,10 @@ class HeteroNodeEdgeAuxHead(nn.Module):
                 edge_scores_sigmoid, src_nodes,
                 dim=0, dim_size=num_nodes, reduce='max')  # (N,)
 
-            # Add signal only to the phishing logit (col 1)
-            # Adding to both cols equally (the old bug) cancels out in softmax
+            # Add signal only to the fraud logit (last col)
+            # [:, -1] works for both dim_out=1 (single sigmoid) and dim_out=2 (softmax)
             node_logits = node_logits.clone()
-            node_logits[:, 1] = node_logits[:, 1] + \
+            node_logits[:, -1] = node_logits[:, -1] + \
                 self.edge_combine_weight * node_edge_signal
 
         # Write combined logits back for _apply_index
