@@ -5,7 +5,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=24G
-#SBATCH --time=24:00:00
+#SBATCH --time=72:00:00
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
 
@@ -21,7 +21,7 @@ mkdir -p logs
 python -m fraudGT.main \
     --cfg configs/ETH-Aux/ETH-Aux-Multi-SparseNodeGT.yaml \
     --gpu 0 \
-    --repeat 5 \
+    --repeat 3 \
     num_threads 6 num_workers 4
 
 echo "Job finished: $(date)"
