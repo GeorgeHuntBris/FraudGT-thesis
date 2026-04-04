@@ -4,6 +4,7 @@ from typing import Dict, Optional, Tuple, Union, overload
 import torch
 from torch import Tensor
 from torch.nn.parameter import Parameter
+from torch_geometric.data import batch
 
 from torch_geometric.explain import (
     ExplainerConfig,
