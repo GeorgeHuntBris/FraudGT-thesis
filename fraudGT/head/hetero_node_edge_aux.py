@@ -1,16 +1,22 @@
 """
-Node classification head with edge scoring task.
+Node classification head with auxiliary edge scoring task.
+
+Mirrors the logic of hetero_edge.py for building edge representations
+(cat[src_emb, dst_emb, edge_attr]), but used as an auxiliary signal that
+feeds back into node-level predictions rather than as a standalone edge task.
 
 Training:
   - Node head trained with weighted cross-entropy against ground truth node labels.
-  - Edge head trained with soft BCE labels: max(1/in_degree, 0.1) for edges
-    pointing to confirmed phishing nodes, 0 otherwise.
+  - Edge head: cat([src_emb, dst_emb, edge_attr]) -> scalar score.
+    Soft BCE labels: max(1/out_degree_src, 0.1) for edges originating from
+    confirmed phishing nodes, 0 otherwise.
   - Total loss = node_loss + aux_lambda * edge_loss.
 
 Test/validation:
-  - Edge head scores each edge, aggregated (max) per destination node to
-    produce a node-level suspicion signal from incoming transactions.
-  - Final prediction = node_logit + edge_combine_weight * aggregated_edge_score.
+  - Edge head scores each edge using learned node embeddings + edge features.
+  - Scores aggregated (max) per SOURCE node to produce a node-level suspicion
+    signal from outgoing transactions.
+  - Final prediction logit[:,1] += edge_combine_weight * aggregated_edge_score.
 """
 
 import torch
@@ -32,15 +38,16 @@ class HeteroNodeEdgeAuxHead(nn.Module):
         super().__init__()
         self.is_hetero = isinstance(dataset[0], HeteroData)
 
-        # Main node classification head
+        # Main node classification head (same as hetero_node.py)
         self.node_head = MLP(
             dim_in, dim_out,
             num_layers=max(cfg.gnn.layers_post_mp, cfg.gt.layers_post_gt),
             bias=True)
 
-        # Edge scoring head: edge_attr -> scalar suspicion score
+        # Edge scoring head: cat([src_emb, dst_emb, edge_attr]) -> scalar
+        # Mirrors hetero_edge.py which uses dim_in * 3 for the same concatenation
         self.edge_aux_head = MLP(
-            dim_in, 1,
+            dim_in * 3, 1,
             num_layers=2,
             bias=True)
 
@@ -74,7 +81,7 @@ class HeteroNodeEdgeAuxHead(nn.Module):
         else:
             node_logits = self.node_head(batch.x)
 
-        # --- Edge head (train and test) ---
+        # --- Edge head ---
         self.aux_loss = None
         if isinstance(batch, HeteroData) and \
                 hasattr(batch[edge_type], 'edge_attr'):
@@ -82,9 +89,19 @@ class HeteroNodeEdgeAuxHead(nn.Module):
             edge_attr = batch[edge_type].edge_attr
             edge_index = batch[edge_type].edge_index
             num_nodes = node_logits.shape[0]
+            src_nodes = edge_index[0]
             dst_nodes = edge_index[1]
 
-            edge_scores = self.edge_aux_head(edge_attr).squeeze(-1)  # (E,)
+            # Build edge representation: cat([src_emb, dst_emb, edge_attr])
+            # Mirrors hetero_edge.py line 44-46
+            node_emb = batch[task].x  # still holds embeddings (node_head didn't modify in place)
+            edge_input = torch.cat([
+                node_emb[src_nodes],
+                node_emb[dst_nodes],
+                edge_attr
+            ], dim=-1)
+
+            edge_scores = self.edge_aux_head(edge_input).squeeze(-1)  # (E,)
 
             # Training: soft BCE loss against pre-computed soft labels
             if self.training and hasattr(batch[edge_type], 'edge_soft_label'):
@@ -94,15 +111,17 @@ class HeteroNodeEdgeAuxHead(nn.Module):
                     edge_scores, edge_soft_label)
                 self.aux_loss = self.aux_lambda * aux_loss
 
-            # Aggregate per destination node: max incoming suspicion score
+            # Aggregate per SOURCE node: max outgoing suspicion score
             edge_scores_sigmoid = torch.sigmoid(edge_scores)
             node_edge_signal = scatter(
-                edge_scores_sigmoid, dst_nodes,
+                edge_scores_sigmoid, src_nodes,
                 dim=0, dim_size=num_nodes, reduce='max')  # (N,)
 
-            # Combine node logits with aggregated edge signal
-            node_logits = node_logits + \
-                self.edge_combine_weight * node_edge_signal.unsqueeze(-1)
+            # Add signal only to the phishing logit (col 1)
+            # Adding to both cols equally (the old bug) cancels out in softmax
+            node_logits = node_logits.clone()
+            node_logits[:, 1] = node_logits[:, 1] + \
+                self.edge_combine_weight * node_edge_signal
 
         # Write combined logits back for _apply_index
         if isinstance(batch, HeteroData):

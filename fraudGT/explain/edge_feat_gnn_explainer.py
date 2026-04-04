@@ -186,7 +186,7 @@ class EdgeFeatGNNExplainer(ExplainerAlgorithm):
             )
             # Create homogeneous explanation
             explanation = Explanation(node_mask=node_mask, edge_mask=edge_mask)
-            # Otherwise constructor may crash as invalid args
+            # Otherwise constructor will crash as invalid args
             explanation.edge_feat_mask = edge_feat_mask
         return explanation
 
@@ -343,7 +343,7 @@ class EdgeFeatGNNExplainer(ExplainerAlgorithm):
                         eh_dict[edge_type] = attr * self.edge_feat_mask[edge_type].sigmoid()
                     else:
                         eh_dict[edge_type] = attr
-                # Update kwargs to reflect newer masked attr
+                # Update kwargs to reflect masked attr
                 kwargs = {**kwargs, 'edge_attr': eh_dict}
             # Forward pass with masked features
             return model(h_dict, edge_index, **kwargs)
@@ -658,6 +658,7 @@ class EdgeFeatGNNExplainer(ExplainerAlgorithm):
         clear_masks(model)
         self.node_mask = self.hard_node_mask = None
         self.edge_mask = self.hard_edge_mask = None
+        self.edge_feat_mask = self.hard_edge_feat_mask = None
 
 
 class GNNExplainer_:

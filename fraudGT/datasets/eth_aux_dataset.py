@@ -1,12 +1,14 @@
 """
 ETH dataset extended with soft auxiliary edge labels for phishing detection.
 
-For each confirmed phishing node, incoming edges receive a soft label of
-max(1 / in_degree, MIN_EDGE_LABEL). All other edges receive label 0.
+For each edge originating FROM a confirmed phishing node, the edge receives a
+soft label of max(1 / out_degree_src, MIN_EDGE_LABEL). All other edges get 0.
 
-This enables an auxiliary edge regression task to run alongside the main
-node classification, encouraging the model to learn which transactions lead
-to phishing accounts.
+Weighting by source out-degree means a phishing node that sends to few addresses
+(concentrated cashout) gets high-confidence labels per edge, while one that sends
+to many places gets weaker labels. At inference, edge scores are aggregated per
+SOURCE node so the signal directly boosts the fraud logit of the node whose
+outgoing behaviour looks suspicious.
 """
 
 import torch
@@ -16,7 +18,7 @@ from .eth_dataset import ETHDataset
 
 
 class ETHAuxDataset(ETHDataset):
-    """ETH dataset with soft auxiliary edge labels.
+    """ETH dataset with soft auxiliary edge labels on outgoing phishing edges.
 
     Inherits all processing from ETHDataset (same raw files, same processed
     directory) and adds edge_soft_label in memory after loading.
@@ -39,20 +41,19 @@ class ETHAuxDataset(ETHDataset):
             num_edges = edge_index.shape[1]
             num_nodes = data['node'].num_nodes
 
-            dst_nodes = edge_index[1]
+            src_nodes = edge_index[0]
 
-            # In-degree per node
-            in_degree = torch.bincount(
-                dst_nodes, minlength=num_nodes).float()
+            # Out-degree per node
+            out_degree = torch.bincount(
+                src_nodes, minlength=num_nodes).float()
 
-            # Soft label = max(1/in_degree, MIN_EDGE_LABEL) if dst is phishing
-            dst_is_phishing = (y[dst_nodes] == 1)
-            dst_in_degree = in_degree[dst_nodes].clamp(min=1)
+            # Soft label = max(1/out_degree_src, MIN_EDGE_LABEL) if src is phishing
+            src_is_phishing = (y[src_nodes] == 1)
+            src_out_degree = out_degree[src_nodes].clamp(min=1)
 
             edge_soft_label = torch.where(
-                dst_is_phishing,
-                torch.clamp(1.0 / dst_in_degree,
-                            min=self.MIN_EDGE_LABEL),
+                src_is_phishing,
+                torch.clamp(1.0 / src_out_degree, min=self.MIN_EDGE_LABEL),
                 torch.zeros(num_edges)
             )
 
