@@ -665,7 +665,7 @@ class EdgeFeatGNNExplainer(ExplainerAlgorithm):
 class GNNExplainer_:
     r"""Deprecated version for :class:`GNNExplainer`."""
 
-    coeffs = GNNExplainer.default_coeffs
+    coeffs = EdgeFeatGNNExplainer.default_coeffs
 
     conversion_node_mask_type = {
         'feature': 'common_attributes',
@@ -705,7 +705,7 @@ class GNNExplainer_:
         )
 
         self.model = model
-        self._explainer = GNNExplainer(epochs=epochs, lr=lr, **kwargs)
+        self._explainer = EdgeFeatGNNExplainer(epochs=epochs, lr=lr, **kwargs)
         self._explainer.connect(explainer_config, model_config)
 
     @torch.no_grad()
