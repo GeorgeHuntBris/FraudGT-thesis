@@ -8,9 +8,9 @@ from fraudGT.graphgym.config import cfg, set_cfg, load_cfg
 from fraudGT.graphgym.cmd_args import parse_args
 from fraudGT.graphgym.model_builder import create_model
 from fraudGT.graphgym.checkpoint import load_ckpt
+from fraudGT.utils import custom_set_out_dir, custom_set_run_dir
 from fraudGT.explain.model_wrapper import PNAExplainerWrapper
 from fraudGT.explain.edge_feat_gnn_explainer import EdgeFeatGNNExplainer
-from fraudGT.loader.master_loader import load_dataset_master
 from fraudGT.graphgym.loader import create_loader
 
 EDGE_FEAT_LABELS_ETH = ['Timestamp', 'Value', 'Nonce', 'Block Nr', 'Gas', 'Gas Price', 'Transaction Type', 'Port']
@@ -26,18 +26,19 @@ args = parse_args()
 # Initialise default config then load yaml on top
 set_cfg(cfg)
 load_cfg(cfg, args)
+custom_set_out_dir(cfg, args.cfg_file, cfg.name_tag, args.gpu)
+custom_set_run_dir(cfg, cfg.seed)  # load from seed 42 (first repeat)
 cfg.freeze()
 
 # Load dataset & model
-dataset, _ = load_dataset_master(cfg.dataset.format, cfg.dataset.dir, cfg) # Returns dataset and splits
+loaders, dataset = create_loader(returnDataset=True)
 model = create_model(dataset=dataset)
 
 # Load checkpoint (trained model weights)
 load_ckpt(model, optimizer=None, scheduler=None)
 model.eval() # Put in eval mode (displaces dropout etc)
 
-# Get a single batch from the dataloader
-loaders = create_loader(dataset) # Creates train, val and test loaders
+# Get test loader
 test_loader = loaders[2]
 
 # Take a single batch
@@ -72,8 +73,7 @@ explainer = Explainer(
 os.makedirs(f'results/explanations/', exist_ok=True) # Create that directory if it doesn't already exist to stop crashing
 for i, node_idx in enumerate(target_nodes):
     explanation = explainer(
-        model = wrapper,
-        x = batch.collect('x'), # Collect node features and store in plain dict for explainer
+        x=batch.collect('x'), # Collect node features and store in plain dict for explainer
         edge_index=batch.collect('edge_index'),
         target=batch[task_node].y,
         index=node_idx,
