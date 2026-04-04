@@ -1,11 +1,11 @@
 import torch
+import fraudGT  # noqa, register custom modules
 from torch_geometric.explain import ModelConfig, Explainer
 from torch_geometric.explain.explanation import _visualize_score
 import os
 
-from fraudGT.graphgym.config import cfg
+from fraudGT.graphgym.config import cfg, set_cfg, load_cfg
 from fraudGT.graphgym.cmd_args import parse_args
-from fraudGT.graphgym import init
 from fraudGT.graphgym.model_builder import create_model
 from fraudGT.graphgym.checkpoint import load_ckpt
 from fraudGT.explain.model_wrapper import PNAExplainerWrapper
@@ -23,9 +23,9 @@ def visualize_edge_feat_importance(edge_feat_mask, path=None, top_k=None):
 # Config loading
 # Read command line args (specifically, path to pna config)
 args = parse_args()
-# Load yaml file into global cfg object
-cfg.merge_from_file(args.cfg_file)
-# Lock config so cannot be modified accidentally during the run
+# Initialise default config then load yaml on top
+set_cfg(cfg)
+load_cfg(cfg, args)
 cfg.freeze()
 
 # Load dataset & model
