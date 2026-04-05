@@ -28,10 +28,10 @@ set_cfg(cfg)
 load_cfg(cfg, args)
 custom_set_out_dir(cfg, args.cfg_file, cfg.name_tag, args.gpu)
 custom_set_run_dir(cfg, cfg.seed)  # load from seed 42 (first repeat)
-cfg.freeze()
 
-# Load dataset & model
+# Load dataset & model (must happen before freeze as loader writes to cfg.share)
 loaders, dataset = create_loader(returnDataset=True)
+cfg.freeze()
 model = create_model(dataset=dataset)
 
 # Load checkpoint (trained model weights)
