@@ -32,7 +32,7 @@ class EdgeFeatGNNExplainer(ExplainerAlgorithm):
 
     .. note::
 
-        For an example of using :class:`GNNExplainer`, see
+        For an examploke of using :class:`GNNExplainer`, see
         `examples/explain/gnn_explainer.py <https://github.com/pyg-team/
         pytorch_geometric/blob/master/examples/explain/gnn_explainer.py>`_,
         `examples/explain/gnn_explainer_ba_shapes.py <https://github.com/

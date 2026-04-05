@@ -3,6 +3,7 @@ import fraudGT  # noqa, register custom modules
 from torch_geometric.explain import ModelConfig, Explainer
 from torch_geometric.explain.explanation import _visualize_score
 import os
+import copy
 
 from fraudGT.graphgym.config import cfg, set_cfg, load_cfg
 from fraudGT.graphgym.cmd_args import parse_args
@@ -12,6 +13,7 @@ from fraudGT.utils import custom_set_out_dir, custom_set_run_dir
 from fraudGT.explain.model_wrapper import PNAExplainerWrapper
 from fraudGT.explain.edge_feat_gnn_explainer import EdgeFeatGNNExplainer
 from fraudGT.graphgym.loader import create_loader
+from fraudGT.graphgym.utils.device import auto_select_device
 
 EDGE_FEAT_LABELS_ETH = ['Timestamp', 'Value', 'Nonce', 'Block Nr', 'Gas', 'Gas Price', 'Transaction Type', 'Port']
 
@@ -29,9 +31,12 @@ load_cfg(cfg, args)
 custom_set_out_dir(cfg, args.cfg_file, cfg.name_tag, args.gpu)
 custom_set_run_dir(cfg, cfg.seed)  # load from seed 42 (first repeat)
 
+auto_select_device(strategy='greedy')
+if cfg.device == 'auto':
+    cfg.device = 'cuda:{}'.format(args.gpu)
+
 # Load dataset & model (must happen before freeze as loader writes to cfg.share)
 loaders, dataset = create_loader(returnDataset=True)
-cfg.freeze()
 model = create_model(dataset=dataset)
 
 # Load checkpoint (trained model weights)
@@ -47,7 +52,7 @@ batch = batch.to(torch.device('cuda' if torch.cuda.is_available() else 'cpu')) #
 
 # Identify target node for explanations
 task_node = cfg.dataset.task_entity # Reads "node" from config (renaming as task_node to avoid confusion)
-pred = model(batch)[0] # Returns (pred, label) - > just take pred. Gives tensor of shape (N,1)
+pred = model(copy.deepcopy(batch))[0] # Returns (pred, label) - > just take pred. Gives tensor of shape (N,1)
 
 
 phishing_scores = pred.squeeze()
@@ -60,7 +65,7 @@ explainer = Explainer(
     model = wrapper,
     algorithm = EdgeFeatGNNExplainer(),
     explanation_type='model',
-    node_mask_type='attributes',
+    node_mask_type=None,
     edge_mask_type='object',
     model_config=ModelConfig(
         mode='binary_classification',
@@ -75,7 +80,6 @@ for i, node_idx in enumerate(target_nodes):
     explanation = explainer(
         x=batch.collect('x'), # Collect node features and store in plain dict for explainer
         edge_index=batch.collect('edge_index'),
-        target=batch[task_node].y,
         index=node_idx,
         edge_attr=batch.collect('edge_attr')
     )

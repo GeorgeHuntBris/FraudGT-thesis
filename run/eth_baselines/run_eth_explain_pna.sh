@@ -21,5 +21,6 @@ mkdir -p logs
 python -m fraudGT.explain.explain_pna \
     --cfg configs/ETH/ETH-Multi-PNA.yaml \
     num_threads 6 num_workers 4
+echo "Python exit code: $?"
 
 echo "Job finished: $(date)"
